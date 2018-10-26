@@ -6,7 +6,7 @@
  * Time: 21:56
  */
 
-use core\DB;
+include_once './core/DB.php';
 
 class LoginModel
 {
@@ -19,7 +19,7 @@ class LoginModel
     }
 
     public function getPassword($userEmail){
-        $sth = $this->db->prepare('select id, password from users where email=:email limit 1');
+        $sth = $this->db->prepare('select id, password from users where email=:email AND access = 1 limit 1');
 
         $params = [
             ':email' => $userEmail

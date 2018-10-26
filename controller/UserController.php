@@ -8,7 +8,7 @@
 
 include './models/UsersModel.php';
 
-class UserController
+class UserController extends Controller
 {
 
     //класс для работы с бд
@@ -21,62 +21,58 @@ class UserController
     }
 
     public function addUser(){
-        //заголовок для ответа
-        header('Content-Type: application/json; charset=utf-8');
         //считываем полученые данные
         $date = json_decode(file_get_contents('php://input'), true);
         //валидируем данные
-        if($this->validate($date)){
-            echo json_encode(array(
+        if($bad = $this->validate($date)){
+            $this->render(array(
                 'code' => 400,
-                'error'=>'invalid parameters'
+                'error' => 'invalid parameters',
+                'description'=> $bad
             ));
-            return;
         }
         //проверяем нет ли пользователя с таким мейлом
         if($this->model->checkUser($date['email'])){
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 400,
                 'error' => 'user with this email already exists'
             ));
-            return;
         }
         //если всё в порядке создаём пользователя
         $user = $this->model->createUser(array(
             'name' => $date['name'],
             'email' => $date['email'],
             'password' => password_hash($date['password'],PASSWORD_DEFAULT),
-            'phone' => $date['phone']
+            'phone' => $date['phone'],
+            'roles' => $date['roles']
         ));
         if($user['status'] == TRUE){
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 200,
-                'date'=>'user created successfully'
+                'user_id' => $user['date']
             ));
         } else {
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 400,
                 'error' => $user['date']
             ));
         }
-        return;
     }
 //на входе получаем ид пользователя, возвращаем его данные если такой есть
     public function getUser($id){
         header('Content-Type: application/json; charset=utf-8');
         $user = $this->model->getUser($id);
         if($user){
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 200,
                 'user' => $user
             ));
         } else {
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 400,
                 'date' => 'User is not found'
             ));
         }
-        return;
     }
 
     public function editUser($id){
@@ -86,12 +82,12 @@ class UserController
         //считываем полученые данные
         $date = json_decode(file_get_contents('php://input'), true);
 
-        if($this->validate_for_edit($date)){
-            echo json_encode(array(
+        if($bad = $this->validate_for_edit($date)){
+            $this->render(array(
                 'code' => 400,
-                'error'=>'invalid parameters'
+                'error'=>'invalid parameters',
+                'description'=> $bad
             ));
-            return;
         }
 
         $user = $this->model->editUser(array(
@@ -104,17 +100,16 @@ class UserController
         ));
 
         if($user['status'] == TRUE){
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 200,
                 'date'=>'user update successfully '
             ));
         } else {
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 400,
                 'error' => $user['date']
             ));
         }
-        return;
     }
 
     // метод для вализации данных
@@ -125,7 +120,7 @@ class UserController
             $errors[] = 'not valid name';
         }
 
-        if($date['email'] == ''){
+        if(!filter_var($date['email'], FILTER_VALIDATE_EMAIL)){
             $errors[] = 'not valid email';
         }
 
@@ -140,6 +135,10 @@ class UserController
         if($date['password'] != $date['password_two']){
             $errors[] = 'not valid email';
         }
+        //roles
+        if(!in_array($date['roles'], array('user','administrator'), true )){
+            $errors[] = 'invalid roles. is available (user, administrator)';
+        }
         return $errors;
     }
 
@@ -153,16 +152,16 @@ class UserController
             $errors[] = 'not valid phone';
         }
 
-        if($date['email'] == ''){
+        if(!filter_var($date['email'], FILTER_VALIDATE_EMAIL)){
             $errors[] = 'not valid email';
         }
 
-        if($date['roles'] == ''){
-            $errors[] = 'not valid roles';
+        if(!in_array($date['roles'], array('user','administrator'), true )){
+            $errors[] = 'invalid roles. is available (user, administrator)';
         }
 
-        if($date['access'] == ''){
-            $errors[] = 'not valid access';
+        if(!in_array($date['access'], array(1,0), true )){
+            $errors[] = 'invalid access. is available ( 1 = open, 0 = close)';
         }
         return $errors;
     }

@@ -8,7 +8,7 @@
 
 include './models/LoginModel.php';
 
-class LoginController
+class LoginController extends Controller
 {
     private $email = '';
     private $password = '';
@@ -18,7 +18,7 @@ class LoginController
 
     public function __construct()
     {
-        include './setting/token.php';
+        //include './setting/token.php';
 
         $this->lifetime = include('./setting/token.php');
 
@@ -32,13 +32,11 @@ class LoginController
     }
 //метод авторизации возвращает токен или ошибку с описанием ошибки
     public function login(){
-        header('Content-Type: application/json; charset=utf-8');
         if($this->validate()){
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 422,
                 'error'=>'invalid data'
             ));
-            return;
         }
 
         $user_info = $this->model->getPassword($this->email);
@@ -47,17 +45,15 @@ class LoginController
 
             $token = $this->model->remember($user_info['id'],$this->lifetime['lifetime']);
 
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 200,
                 'token' => $token
             ));
-            return;
         } else {
-            echo json_encode(array(
+            $this->render(array(
                 'code' => 401,
                 'error'=>'wrong login or password'
             ));
-            return;
         }
     }
 

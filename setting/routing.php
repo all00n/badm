@@ -1,9 +1,10 @@
 <?php
 
-$routes = [
+return [
     'user' =>[
         'controller'=> 'UserController',
         'patch'      => 'controller/UserController.php',
+        'permission' => 'administrator',
         'methods'    => [
             'GET'   =>  ['action' => 'getUser', 'slug' => '/^[0-9]{1,10}$/'],
             'POST'  =>  ['action' => 'addUser'],
@@ -14,6 +15,7 @@ $routes = [
     'login' =>[
         'controller'=> 'LoginController',
         'patch'     => 'controller/LoginController.php',
+        'permission' => '',
         'methods'    => [
             'POST'  =>  ['action' => 'login'],
         ]
@@ -22,39 +24,45 @@ $routes = [
     'fibonacci' => [
         'controller'=> 'FibonacciController',
         'patch'      => 'controller/FibonacciController.php',
+        'permission' => 'user',
         'methods'    => [
             'GET'   =>  ['action' => 'fibonacci', 'slug' => '/^[0-9]{1,10}$/']
         ]
     ],
 
-    'string' => [
-        'controller'=> 'StringController',
-        'patch'      => 'controller/StringController.php',
+    'get_price' => [
+        'controller'=> 'PriceController',
+        'patch'      => 'controller/PriceController.php',
+        'permission' => 'user',
         'methods'    => [
-            'GET'   =>  ['action' => 'number2string', 'slug' => '/^(\d+(\.\d{1,2})?)$/']
+            'GET'   =>  ['action' => 'getPrice', 'slug' => '/^(\d+(\.\d{1,2})?)$/']
         ]
     ],
-    
-    'home' =>[
-      'controller'=> 'HomeController',
-      'patch'      => 'controller/HomeController.php',
-      'action'    => 'index',
-      'reg'       =>'/^[a-zA-Z]{1,10}$/'
+
+    'tasks' => [
+        'controller'=> 'TaskController',
+        'patch'      => 'controller/TaskController.php',
+        'permission' => 'user',
+        'methods'    => [
+            'GET'   =>  ['action' => 'getTasks']
+        ]
+    ],
+    'task' => [
+        'controller'=> 'TaskController',
+        'patch'      => 'controller/TaskController.php',
+        'permission' => 'user',
+        'methods'    => [
+            'GET'   =>  ['action' => 'getTask', 'slug' => '/^[0-9]{1,10}$/'],
+            'POST'  =>  ['action' => 'addTask'],
+        ]
     ],
 
-    'page' =>[
-      'controller'=> 'PageController',
-      'patch'      => 'controller/PageController.php',
-      'action'    => 'index',
-      'slug'      => [
-          'reg' => '/^[0-9]{1,10}$/',
-          'default' => 1
-      ]
+    'addComment' => [
+        'controller'=> 'TaskController',
+        'patch'      => 'controller/TaskController.php',
+        'permission' => 'user',
+        'methods'    => [
+            'POST'   =>  ['action' => 'addComment', 'slug' => '/^[0-9]{1,10}$/']
+        ]
     ],
-    
-    'pages' =>[
-      'controller'=> 'PageController',
-      'patch'      => 'controller/PageController.php',
-      'action'    => 'getPages'
-    ]
 ];

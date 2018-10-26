@@ -11,11 +11,8 @@ class Router {
     //CONSTRUCTOR
     public function __construct() 
     {
-         //Подключаем массив с роутами
-        include './setting/routing.php';
-        
         //Присваиваем массив с роутами в локальную переменную класса
-        $this->routes = $routes;
+        $this->routes = include ('./setting/routing.php');
         // Присваиваем строку запроса пользователя в локальную переменную класса  (после домена)
         $this->route = $_GET['route'];
     }
@@ -37,21 +34,46 @@ class Router {
             }
             else 
             {
-                $this->getError(404);
+                $this->getError(404, 'invalid route');
             }
           }
         }
         
         private function showController($data){
             //вся информация о роуте
+            $session = [];
             $route = $this->routes[$data['name']];
             //записываем метод запроса
             $method = @$_SERVER['REQUEST_METHOD'];
+            $header = getallheaders();
+
+            if(isset($header['Authorization'])){
+                include './controller/TokenController.php';
+                $token_manager = new TokenController($header['Authorization']);
+                //если токен актуальный то заполняется глобальную переменную
+                //2 параметра id пользователя и его roles
+                //и сразу перенесем в локальную переменную
+                $session = $GLOBALS['session'] = $token_manager->getPermission();
+            }
 
             //если в роутах нет совпадения по роуту и методу запроса выходим их программы
             if(!isset($route['methods'][$method])){
                 $this->getError(404,'not valid patch or method');
             }
+
+            //проверяем права доступа к роутам
+            //смотрим требуются ли у нас вообще права в роуте если не нужны то проходим ничего не проверяя
+            //пока что такой тоут только login
+            //может и кастфльная аутентификация на скорую руку ничего лучше не придумал)
+            if($route['permission'] != ''){
+                //если у нас права администратора то пропускаем ко всему
+                if($session['roles'] != 'administrator'){
+                    if($session['roles'] != $route['permission']){
+                        $this->getError(403,'access denied');
+                    }
+                }
+            }
+
 
             //далее вытягиваем данные о методе класса и слуг если есть
             $infoController = $route['methods'][$method];
@@ -104,7 +126,7 @@ class Router {
                 'code'=>$code,
                 'error'=>$date
             ));
-            return;
+            die();
         }
 }
 

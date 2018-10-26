@@ -6,7 +6,7 @@
  * Time: 10:57
  */
 
-class StringController
+class PriceController extends Controller
 {
     private $nul = 'ноль';
     private $ten=array(
@@ -24,8 +24,7 @@ class StringController
         array('миллиард','милиарда','миллиардов',0),
     );
 
-    public function number2string($num) {
-        header('Content-Type: application/json; charset=utf-8');
+    public function getPrice($num) {
 
         //разлаживаем флоат на челую идробную часть
         list($sum,$kop) = explode('.',sprintf("%015.2f", floatval($num)));
@@ -50,8 +49,7 @@ class StringController
         $out[] = $kop.' '.$this->unit[0][0]; // kop
         $result = trim(preg_replace('/ {2,}/', ' ', join(' ',$out)));
 
-        echo json_encode(array('result'=>$result));
-        return;
+        $this->render(array('result'=>$result));
     }
 
     /**

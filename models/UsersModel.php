@@ -6,7 +6,8 @@
  * Time: 17:40
  */
 
-use core\DB;
+include_once './core/DB.php';
+
 class UsersModel
 {
     //класс для работы с бд
@@ -20,7 +21,7 @@ class UsersModel
 
     public function getUser($id)
     {
-        $sth = $this->db->prepare('select `name`,email,roles,created_at,phone from users where id = :id limit 1');
+        $sth = $this->db->prepare('select `name`,email,roles,created_at,phone,access from users where id = :id limit 1');
 
         $params = [
             ':id' => $id
@@ -57,7 +58,7 @@ class UsersModel
                 ':email' => $user['email'],
                 ':password' => $user['password'],
                 ':phone' => $user['phone'],
-                ':roles' => 'user'
+                ':roles' => $user['roles']
             ];
 
             if($sth->execute($params)){
